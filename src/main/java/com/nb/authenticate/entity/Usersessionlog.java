@@ -26,6 +26,7 @@ public class Usersessionlog {
     private String  systeminfo;
     private String logintime ;
     private String  logouttime;
+    private Boolean isExpired;
     @OneToOne
     @JoinColumn(name = "userid", referencedColumnName = "id")
     private Userinfo userinfo;

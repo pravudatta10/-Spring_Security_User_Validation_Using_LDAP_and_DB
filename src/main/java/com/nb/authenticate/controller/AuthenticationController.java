@@ -10,9 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 @RestController
 public class AuthenticationController {
@@ -36,6 +44,8 @@ public class AuthenticationController {
     }
     @PostMapping("/refreshtoken")
     public AuthenticationResponse refreshtoken(@RequestBody RefreshtokenRequest refreshtokenRequest){
+        Optional<Usersessionlog> usersessionlog = refreshTokenService.findbyToken(refreshtokenRequest.getRefreshtoken());
+        System.out.println(usersessionlog);
         return  refreshTokenService.findbyToken(refreshtokenRequest.getRefreshtoken())
                 .map(refreshTokenService::verifyExpiration)
                 .map(Usersessionlog::getUserinfo)
@@ -45,4 +55,5 @@ public class AuthenticationController {
                 }).orElseThrow(() -> new RuntimeException(
                         "Refresh token is not in database!"));
     }
+
 }

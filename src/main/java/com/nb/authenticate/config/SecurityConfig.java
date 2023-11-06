@@ -2,6 +2,7 @@ package com.nb.authenticate.config;
 
 import com.nb.authenticate.filter.AuthenticationFilter;
 import com.nb.authenticate.service.AuthenticationService;
+import com.nb.authenticate.service.LogoutService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +13,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -23,7 +26,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     AuthenticationFilter authenticationFilter;
     @Autowired
     AuthenticationService authenticationService;
+    @Autowired
+    private LogoutService logoutService;
+    @Autowired
+    private LogoutHandler logoutHandler;
 
+    @Autowired
+    private  PasswordEncoder passwordEncoder;
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         try {
@@ -44,10 +53,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         }
     }
 
-    @Bean
+   /* @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
+    }*/
 
     @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
     @Override
@@ -63,6 +72,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 and().exceptionHandling().
                 and().sessionManagement().
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout ->
+                        logout.logoutUrl("/logout")
+                                .addLogoutHandler(logoutHandler)
+                                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
+                );
     }
 }

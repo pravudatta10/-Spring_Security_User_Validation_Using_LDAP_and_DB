@@ -7,4 +7,7 @@ import java.util.Optional;
 
 public interface UsersessionlogRepository extends JpaRepository<Usersessionlog,Integer> {
     Optional<Usersessionlog> findByRefreshtoken(String refreshtoken);
+
+
+   Optional<Usersessionlog> findByaccesstoken(String token);
 }

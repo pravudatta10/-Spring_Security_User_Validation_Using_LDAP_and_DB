@@ -24,6 +24,7 @@ public class RefreshTokenService {
 
     public Usersessionlog createRefrehsToken(String userid, String accesstoken) {
         HttpServletRequest ipaddress = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
         Usersessionlog usersessionlog = Usersessionlog.builder()
                 .userinfo(userinfoRepository.findByUserid(userid))
                 .accesstoken(accesstoken)
@@ -33,6 +34,7 @@ public class RefreshTokenService {
                 .systeminfo(System.getProperty("os.name"))
                 .logintime(String.valueOf(LocalDateTime.now()))
                 .logouttime("")
+                .isExpired(false)
                 .build();
         return usersessionlogRepository.save(usersessionlog);
     }

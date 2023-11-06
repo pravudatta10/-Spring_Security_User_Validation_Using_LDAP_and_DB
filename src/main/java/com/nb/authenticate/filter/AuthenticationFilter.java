@@ -1,5 +1,7 @@
 package com.nb.authenticate.filter;
 
+import com.nb.authenticate.entity.Usersessionlog;
+import com.nb.authenticate.repository.UsersessionlogRepository;
 import com.nb.authenticate.service.AuthenticationService;
 import com.nb.authenticate.service.AuthenticationUtilService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
+
 @Component
 public class AuthenticationFilter extends OncePerRequestFilter {
     @Autowired
@@ -22,6 +26,8 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    UsersessionlogRepository usersessionlogRepository;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -33,8 +39,14 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             token = authorizationHeader.substring(7);
             userid = authenticationUtilService.extractUsername(token);
+
         }
-        if (userid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        boolean checklogoutSession=false;
+        Optional<Usersessionlog> stordedToken = usersessionlogRepository.findByaccesstoken(token);
+        if(stordedToken.isPresent()){
+             checklogoutSession = stordedToken.get().getIsExpired();
+        }
+        if (userid != null && SecurityContextHolder.getContext().getAuthentication() == null && checklogoutSession==false) {
 
             UserDetails userDetails = authenticationService.loadUserByUsername(userid);
 
